@@ -1,0 +1,143 @@
+/* Apogee Book — Dark theme with acid green accents */
+
+:root {
+  --apogee-green: #a8ff60;
+  --apogee-green-dim: #a8ff6040;
+  --apogee-bg: #0a0e17;
+  --apogee-bg-light: #111827;
+  --apogee-blue: #70d4ff;
+  --apogee-yellow: #ffd760;
+  --apogee-orange: #ff8f6f;
+}
+
+/* Override coal theme colors */
+.coal {
+  --bg: #0a0e17;
+  --fg: #e2e8f0;
+  --sidebar-bg: #060a12;
+  --sidebar-fg: #9ca3af;
+  --sidebar-active: var(--apogee-green);
+  --links: var(--apogee-green);
+  --inline-code-color: var(--apogee-blue);
+  --theme-popup-bg: #111827;
+  --theme-popup-border: #1f2937;
+  --quote-bg: #111827;
+  --quote-border: var(--apogee-green);
+  --table-border-color: #1f2937;
+  --table-header-bg: #111827;
+  --table-alternate-bg: #0d1321;
+  --searchbar-border-color: #1f2937;
+  --searchbar-bg: #111827;
+  --searchresults-header-fg: var(--apogee-green);
+}
+
+/* Headings */
+.coal h1, .coal h2, .coal h3, .coal h4 {
+  color: #f8fafc;
+}
+
+.coal h1 {
+  border-bottom: 2px solid var(--apogee-green-dim);
+  padding-bottom: 0.4em;
+}
+
+.coal h2 {
+  color: var(--apogee-green);
+  margin-top: 2em;
+}
+
+/* Code blocks */
+.coal code {
+  background: #111827;
+  border-radius: 4px;
+  padding: 0.15em 0.4em;
+  font-size: 0.9em;
+}
+
+.coal pre {
+  background: #0d1321 !important;
+  border: 1px solid #1f2937;
+  border-radius: 8px;
+  border-left: 3px solid var(--apogee-green);
+}
+
+.coal pre > code {
+  background: transparent;
+  padding: 0;
+}
+
+/* Blockquotes — used for vs Python boxes and tips */
+.coal blockquote {
+  border-left: 3px solid var(--apogee-green);
+  background: #111827;
+  border-radius: 0 8px 8px 0;
+  padding: 1em 1.5em;
+  margin: 1.5em 0;
+}
+
+.coal blockquote p:first-child strong {
+  color: var(--apogee-green);
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Tables */
+.coal table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.coal th {
+  background: #111827;
+  color: var(--apogee-green);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8em;
+  letter-spacing: 0.05em;
+}
+
+/* Sidebar */
+.coal .sidebar .sidebar-scrollbox {
+  padding-top: 1.5em;
+}
+
+.coal .sidebar a.active {
+  color: var(--apogee-green);
+  font-weight: 600;
+}
+
+/* Links */
+.coal a {
+  color: var(--apogee-green);
+  text-decoration: none;
+}
+
+.coal a:hover {
+  text-decoration: underline;
+}
+
+/* Selection */
+.coal ::selection {
+  background: var(--apogee-green-dim);
+}
+
+/* Custom admonition-style boxes */
+.coal .warning {
+  border-left-color: var(--apogee-orange);
+  background: #1a1207;
+}
+
+.coal .warning strong:first-child {
+  color: var(--apogee-orange) !important;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Better reading width */
+.content main {
+  max-width: 52em;
+}

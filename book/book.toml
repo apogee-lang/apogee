@@ -1,0 +1,26 @@
+[book]
+title = "The Apogee Book"
+authors = ["The Apogee Foundation"]
+description = "The definitive guide to the Apogee programming language."
+language = "en"
+src = "src"
+
+[output.html]
+additional-css = ["src/css/apogee.css"]
+default-theme = "coal"
+preferred-dark-theme = "coal"
+git-repository-url = "https://github.com/apogee-lang/apogee"
+edit-url-template = "https://github.com/apogee-lang/apogee/edit/main/book/{path}"
+site-url = "/book/"
+no-section-label = false
+
+[output.html.fold]
+enable = true
+level = 0
+
+[output.html.playground]
+editable = false
+
+[output.html.search]
+enable = true
+limit-results = 20
