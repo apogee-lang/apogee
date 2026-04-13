@@ -1,0 +1,24 @@
+{
+  "name": "apogee-content-gen",
+  "version": "0.1.0",
+  "description": "Automated content generation pipeline for the Apogee programming language",
+  "type": "module",
+  "bin": {
+    "apogee-content-gen": "./src/cli.js"
+  },
+  "scripts": {
+    "start": "node src/cli.js",
+    "comparison": "node src/cli.js comparison --source python",
+    "tutorial": "node src/cli.js tutorial",
+    "devlog": "node src/cli.js devlog",
+    "hn-post": "node src/cli.js hn-post",
+    "corpus": "node src/cli.js corpus --count 10"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18"
+  }
+}
