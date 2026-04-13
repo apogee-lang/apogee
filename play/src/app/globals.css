@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --apogee-green: #a8ff60;
+  --apogee-bg: #0a0e17;
+  --apogee-bg-deep: #060a12;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: var(--apogee-bg-deep);
+  color: #e2e8f0;
+  overflow: hidden;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #4b5563;
+}
+
+/* Resize handle between panels */
+.resize-handle {
+  width: 4px;
+  cursor: col-resize;
+  background: transparent;
+  transition: background 0.15s;
+  position: relative;
+  flex-shrink: 0;
+}
+.resize-handle:hover,
+.resize-handle:active {
+  background: var(--apogee-green);
+}
+.resize-handle::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -4px;
+  right: -4px;
+  bottom: 0;
+}
+
+kbd {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+@media (max-width: 768px) {
+  .panel-container {
+    flex-direction: column !important;
+  }
+  .resize-handle {
+    display: none;
+  }
+  .editor-panel,
+  .output-panel {
+    width: 100% !important;
+    height: 50% !important;
+  }
+}
