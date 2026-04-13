@@ -51,9 +51,9 @@ export const monarchTokens: languages.IMonarchLanguage = {
 
   tokenizer: {
     root: [
-      // Annotations
-      [/@intent/, "annotation"],
-      [/@\w+/, "annotation"],
+      // Annotations — use \\@ to escape the @ (Monarch treats @ as attribute ref)
+      [/@@intent/, "annotation"],
+      [/@@\w+/, "annotation"],
 
       // Identifiers and keywords
       [/`[^`]+`/, "variable.backtick"],

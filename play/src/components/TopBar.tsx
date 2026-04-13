@@ -18,7 +18,12 @@ export default function TopBar({
 }: Props) {
   const [showExamples, setShowExamples] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isMac, setIsMac] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setIsMac(navigator.platform?.includes("Mac") ?? false);
+  }, []);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -158,11 +163,7 @@ export default function TopBar({
           )}
           Run
           <kbd className="hidden sm:inline text-[10px] opacity-60 ml-1">
-            {typeof navigator !== "undefined" &&
-            navigator.platform?.includes("Mac")
-              ? "\u2318"
-              : "Ctrl"}
-            +\u23CE
+            {isMac ? "\u2318" : "Ctrl"}+\u23CE
           </kbd>
         </button>
       </div>
