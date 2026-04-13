@@ -1,0 +1,12 @@
+@intent("greet the user by name, never null")
+fn greet(name: String) -> String {
+  "Hello, \(name)! Welcome to Apogee."
+}
+
+type User {
+  name: String
+  age: Int where age >= 0
+}
+
+let user = User { name: "Tyler", age: 35 }
+print(greet(user.name))

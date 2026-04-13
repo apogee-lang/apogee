@@ -1,0 +1,46 @@
+name: Apogee CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install package
+        run: pip install -e .
+
+      - name: Run tests
+        run: python -m tests.test_runner
+
+      - name: Compile showcase example
+        run: |
+          cat > /tmp/showcase.apg << 'EOF'
+          @intent("greet the user by name, never null")
+          fn greet(name: String) -> String {
+            "Hello, \(name)! Welcome to Apogee."
+          }
+
+          type User {
+            name: String
+            age: Int where age >= 0
+          }
+
+          let user = User { name: "Tyler", age: 35 }
+          print(greet(user.name))
+          EOF
+          apogee run /tmp/showcase.apg

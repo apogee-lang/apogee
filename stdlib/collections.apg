@@ -1,0 +1,60 @@
+// Apogee Standard Library — Collections
+
+// List[T] — ordered, typed collection
+// Built-in: maps to Python list with type hints
+
+@intent("create a new empty list of the given type")
+fn list_new() -> [Any] {
+  []
+}
+
+@intent("add an element to the end of a list")
+fn list_push(lst: [Any], item: Any) -> [Any] {
+  // Maps to: lst.append(item); return lst
+}
+
+@intent("remove and return the last element")
+fn list_pop(lst: [Any]) -> Any? {
+  // Maps to: lst.pop() if lst else None
+}
+
+@intent("get element at index, null if out of bounds")
+fn list_get(lst: [Any], index: Int) -> Any? {
+  // Maps to: lst[index] if 0 <= index < len(lst) else None
+}
+
+// Map[K, V] — key-value store
+// Built-in: maps to Python dict with type hints
+
+@intent("create a new empty map")
+fn map_new() -> Any {
+  // Maps to: {}
+}
+
+@intent("set a key-value pair in the map")
+fn map_set(m: Any, key: Any, value: Any) -> Any {
+  // Maps to: m[key] = value; return m
+}
+
+@intent("get value for key, null if missing")
+fn map_get(m: Any, key: Any) -> Any? {
+  // Maps to: m.get(key)
+}
+
+// Set[T] — unique elements
+// Built-in: maps to Python set
+
+@intent("create a new empty set")
+fn set_new() -> Any {
+  // Maps to: set()
+}
+
+@intent("add an element to the set")
+fn set_add(s: Any, item: Any) -> Any {
+  // Maps to: s.add(item); return s
+}
+
+@intent("check if element is in the set")
+fn set_contains(s: Any, item: Any) -> Bool {
+  // Maps to: item in s
+}

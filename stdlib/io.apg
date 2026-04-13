@@ -1,0 +1,31 @@
+// Apogee Standard Library — I/O operations
+
+@intent("print a value to stdout")
+fn print(value: Any) -> Void {
+  // Built-in: maps to Python print()
+}
+
+@intent("read a line from stdin")
+fn read(prompt: String = "") -> String {
+  // Built-in: maps to Python input()
+}
+
+@intent("read entire file contents as a string")
+fn read_file(path: String) -> String? {
+  // Maps to: open(path).read()
+}
+
+@intent("write string to a file, creating if needed")
+fn write_file(path: String, content: String) -> Bool {
+  // Maps to: open(path, 'w').write(content)
+}
+
+@intent("append string to a file")
+fn append_file(path: String, content: String) -> Bool {
+  // Maps to: open(path, 'a').write(content)
+}
+
+@intent("check if a file exists")
+fn file_exists(path: String) -> Bool {
+  // Maps to: os.path.exists(path)
+}

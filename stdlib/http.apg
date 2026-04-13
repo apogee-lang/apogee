@@ -1,0 +1,16 @@
+// Apogee Standard Library — HTTP
+
+@intent("perform an HTTP GET request")
+async fn fetch(url: String) -> String? {
+  // Maps to: aiohttp or urllib request
+}
+
+@intent("perform an HTTP POST request with a body")
+async fn post(url: String, body: String) -> String? {
+  // Maps to: aiohttp or urllib POST
+}
+
+@intent("start a simple HTTP server on the given port")
+async fn serve(port: Int where port > 0, handler: (String) -> String) -> Void {
+  // Maps to: aiohttp server
+}

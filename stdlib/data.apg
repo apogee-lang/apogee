@@ -1,0 +1,36 @@
+// Apogee Standard Library — Data operations
+
+@intent("filter a list by a predicate")
+fn filter(lst: [Any], predicate: (Any) -> Bool) -> [Any] {
+  from lst where predicate(it)
+}
+
+@intent("transform each element of a list")
+fn map_list(lst: [Any], transform: (Any) -> Any) -> [Any] {
+  // Maps to: [transform(x) for x in lst]
+}
+
+@intent("sort a list using a key function")
+fn sort(lst: [Any], key: (Any) -> Any) -> [Any] {
+  // Maps to: sorted(lst, key=key)
+}
+
+@intent("reduce a list to a single value")
+fn reduce(lst: [Any], initial: Any, combine: (Any, Any) -> Any) -> Any {
+  // Maps to: functools.reduce(combine, lst, initial)
+}
+
+@intent("find the first element matching a predicate")
+fn find(lst: [Any], predicate: (Any) -> Bool) -> Any? {
+  // Maps to: next((x for x in lst if predicate(x)), None)
+}
+
+@intent("group list elements by a key function")
+fn group_by(lst: [Any], key: (Any) -> Any) -> Any {
+  // Maps to: itertools.groupby pattern
+}
+
+@intent("compute sum of numeric list")
+fn sum(lst: [Int]) -> Int {
+  // Maps to: sum(lst)
+}
