@@ -1,203 +1,463 @@
 # Apogee Language Specification
 
-**Version 0.1.0** — Draft
+**Version 0.1.0** | Status: Draft | File extension: `.apg`
 
-## 1. Overview
+---
 
-Apogee is a statically-typed programming language designed for the AI era. It compiles to Python 3.11+ and provides compile-time memory safety, null-safe types, structured concurrency, and `@intent` annotations for AI verification.
+## 1. Notation
 
-**File extension:** `.apg`
+This specification uses Extended Backus-Naur Form (EBNF) with the following conventions:
+
+| Notation | Meaning |
+|---|---|
+| `'literal'` | Terminal string |
+| `UPPER_CASE` | Token produced by the lexer |
+| `lower_case` | Grammar production rule |
+| `A B` | Sequence (A then B) |
+| `A \| B` | Alternative (A or B) |
+| `[ A ]` | Optional (zero or one) |
+| `{ A }` | Repetition (zero or more) |
+| `( A )` | Grouping |
+| `(* ... *)` | Comment |
+
+---
 
 ## 2. Lexical Grammar
 
-```
-program        → statement* EOF
-statement      → fn_decl | type_decl | let_stmt | for_stmt | while_stmt
-               | if_stmt | expr_stmt | return_stmt | import_stmt | assign_stmt
+### 2.1 Source Text
 
-// Literals
-INT_LIT        → [0-9]+
-FLOAT_LIT      → [0-9]+ '.' [0-9]+
-STRING_LIT     → '"' (escape | interp | [^"\\])* '"'
-BOOL_LIT       → 'true' | 'false'
-escape         → '\\' [ntr"\\]
-interp         → '\\(' expr ')'
+Apogee source files are UTF-8 encoded. Line endings are `\n` (LF) or `\r\n` (CRLF), normalized to LF.
 
-// Identifiers
-IDENT          → [a-zA-Z_][a-zA-Z0-9_]*
-BACKTICK_IDENT → '`' [^`]+ '`'
+### 2.2 Whitespace and Comments
 
-// Keywords
-keyword        → 'fn' | 'type' | 'spawn' | 'let' | 'from' | 'where'
-               | 'if' | 'else' | 'return' | 'import' | 'async' | 'await'
-               | 'null' | 'true' | 'false' | 'in' | 'for' | 'while' | 'match'
-
-// Comments
-line_comment   → '//' [^\n]* '\n'
-block_comment  → '/*' (block_comment | .)* '*/'   // nestable
+```ebnf
+whitespace     = ' ' | '\t' | '\r' ;
+line_comment   = '//' { any_char - '\n' } '\n' ;
+block_comment  = '/*' { block_comment | any_char } '*/' ;
+                 (* block comments nest *)
 ```
 
-## 3. Type System
+### 2.3 Keywords
 
-### 3.1 Built-in Types
-
-| Apogee Type | Python Mapping | Description |
-|---|---|---|
-| `Int` | `int` | Arbitrary-precision integer |
-| `Float` | `float` | 64-bit floating point |
-| `String` | `str` | UTF-8 string |
-| `Bool` | `bool` | Boolean |
-| `Void` | `None` | No value |
-| `Any` | `object` | Escape hatch |
-
-### 3.2 Nullable Types
-
-```
-type? — the value may be null
-
-let name: String? = null   // OK
-let name: String = null    // COMPILE ERROR
+```ebnf
+keyword = 'fn' | 'type' | 'let' | 'return'
+        | 'if' | 'else' | 'for' | 'in' | 'while' | 'match'
+        | 'from' | 'where' | 'spawn'
+        | 'import' | 'async' | 'await'
+        | 'true' | 'false' | 'null' ;
 ```
 
-### 3.3 Constraint Types
+Keywords cannot be used as identifiers. Use backtick syntax for identifiers that conflict.
 
-```
-Int where value > 0        // positive integers only
-String where len(value) > 0  // non-empty strings
+### 2.4 Identifiers
 
-type User {
-  age: Int where age >= 0  // constraint checked at construction
-}
-```
+```ebnf
+IDENT          = ident_start { ident_continue } ;
+ident_start    = 'a'..'z' | 'A'..'Z' | '_' ;
+ident_continue = ident_start | '0'..'9' ;
 
-Constraints on literal values are checked at compile time. Runtime values are checked via `__post_init__` validation.
-
-### 3.4 Collection Types
-
-```
-[T]            — List of T    → list[T]
+BACKTICK_IDENT = '`' { any_char - '`' } '`' ;
+                 (* multi-word identifiers: `add numbers` *)
 ```
 
-### 3.5 Function Types
+### 2.5 Literals
 
-```
-(A, B) -> C    — function taking A, B returning C
-```
+```ebnf
+INT_LIT    = digit { digit } ;
+FLOAT_LIT  = digit { digit } '.' digit { digit } ;
+BOOL_LIT   = 'true' | 'false' ;
+NULL_LIT   = 'null' ;
 
-## 4. Declarations
+STRING_LIT = '"' { string_char } '"' ;
+string_char = escape_seq | interpolation | any_char - '"' - '\\' - '\n' ;
+escape_seq  = '\\' ( 'n' | 't' | 'r' | '\\' | '"' ) ;
+interpolation = '\\(' expression ')' ;
+               (* string interpolation: "Hello, \(name)!" *)
 
-### 4.1 Functions
-
-```
-fn name(param: Type, ...) -> ReturnType {
-  body
-}
-```
-
-- The last expression in a block is the implicit return value.
-- Multi-word names: `` fn `add numbers`(a: Int, b: Int) -> Int ``
-- Async functions: `async fn fetch_data() -> String { ... }`
-
-### 4.2 Type Definitions
-
-```
-type Name {
-  field1: Type
-  field2: Type = default_value
-}
+digit = '0'..'9' ;
 ```
 
-Compiles to a Python `@dataclass`. Fields with constraint types generate `__post_init__` validation.
+### 2.6 Operators and Punctuation
 
-### 4.3 Variables
+```ebnf
+(* Arithmetic *)
+PLUS = '+' ;  MINUS = '-' ;  STAR = '*' ;  SLASH = '/' ;  PERCENT = '%' ;
 
+(* Comparison *)
+EQEQ = '==' ;  NEQ = '!=' ;  LT = '<' ;  GT = '>' ;  LTE = '<=' ;  GTE = '>=' ;
+
+(* Logical *)
+AND = '&&' ;  OR = '||' ;  NOT = '!' ;
+
+(* Assignment and arrows *)
+EQ = '=' ;  ARROW = '->' ;  FAT_ARROW = '=>' ;
+
+(* Punctuation *)
+LPAREN = '(' ;  RPAREN = ')' ;  LBRACE = '{' ;  RBRACE = '}' ;
+LBRACKET = '[' ;  RBRACKET = ']' ;
+DOT = '.' ;  COMMA = ',' ;  COLON = ':' ;  SEMICOLON = ';' ;
+QUESTION = '?' ;  AT = '@' ;  PIPE = '|' ;
 ```
-let x = 42              // immutable binding, type inferred
-let y: String = "hello" // explicit type annotation
+
+---
+
+## 3. Syntax Grammar
+
+### 3.1 Program
+
+```ebnf
+program = { statement } EOF ;
 ```
 
-## 5. Expressions
+### 3.2 Statements
 
-### 5.1 Operators
+```ebnf
+statement = fn_decl
+          | type_decl
+          | let_stmt
+          | return_stmt
+          | for_stmt
+          | while_stmt
+          | if_stmt
+          | import_stmt
+          | assign_stmt
+          | expr_stmt ;
 
-| Precedence | Operators | Associativity |
-|---|---|---|
-| 1 (lowest) | `\|\|` | Left |
+fn_decl = [ intent_annotation ] [ 'async' ] 'fn' fn_name '(' [ param_list ] ')' [ '->' type ] block ;
+
+fn_name = IDENT | BACKTICK_IDENT ;
+
+param_list = param { ',' param } ;
+param      = IDENT [ ':' type ] [ '=' expression ] ;
+
+intent_annotation = '@intent' '(' STRING_LIT ')' ;
+
+type_decl = 'type' IDENT '{' { type_field } '}' ;
+type_field = IDENT ':' type [ '=' expression ] ;
+
+let_stmt    = 'let' IDENT [ ':' type ] '=' expression ;
+return_stmt = 'return' [ expression ] ;
+import_stmt = 'import' IDENT { '.' IDENT } ;
+
+for_stmt   = 'for' IDENT 'in' expression block ;
+while_stmt = 'while' expression block ;
+if_stmt    = 'if' expression block { 'else' ( if_stmt | block ) } ;
+
+assign_stmt = expression '=' expression ;
+expr_stmt   = expression ;
+```
+
+### 3.3 Blocks
+
+```ebnf
+block = '{' { statement } [ expression ] '}' ;
+        (* the trailing expression is the block's implicit return value *)
+```
+
+### 3.4 Types
+
+```ebnf
+type = simple_type [ '?' ] [ 'where' expression ]
+     | list_type [ '?' ]
+     | function_type [ '?' ] ;
+
+simple_type   = IDENT ;
+               (* built-in: Int, Float, String, Bool, Void, Any *)
+               (* user-defined: any PascalCase identifier *)
+
+list_type     = '[' type ']' ;
+function_type = '(' [ type { ',' type } ] ')' '->' type ;
+```
+
+**Nullable suffix** (`?`): Indicates the value may be `null`. Without `?`, null is a compile-time error.
+
+**Constraint clause** (`where`): Attaches a boolean predicate to the type. The identifier in the predicate refers to the value being checked.
+
+### 3.5 Expressions
+
+```ebnf
+expression = or_expr ;
+
+or_expr     = and_expr { '||' and_expr } ;
+and_expr    = eq_expr { '&&' eq_expr } ;
+eq_expr     = cmp_expr { ( '==' | '!=' ) cmp_expr } ;
+cmp_expr    = add_expr { ( '<' | '>' | '<=' | '>=' ) add_expr } ;
+add_expr    = mul_expr { ( '+' | '-' ) mul_expr } ;
+mul_expr    = unary_expr { ( '*' | '/' | '%' ) unary_expr } ;
+unary_expr  = ( '-' | '!' ) unary_expr | postfix_expr ;
+postfix_expr = primary_expr { call | member | index | null_check } ;
+
+call       = '(' [ expression { ',' expression } ] ')' ;
+member     = '.' IDENT ;
+index      = '[' expression ']' ;
+null_check = '?' ;
+             (* safe access: returns null if receiver is null *)
+
+primary_expr = INT_LIT | FLOAT_LIT | STRING_LIT | BOOL_LIT | NULL_LIT
+             | IDENT [ struct_literal ]
+             | BACKTICK_IDENT
+             | '(' expression ')'
+             | list_literal
+             | if_expr
+             | query_expr
+             | spawn_expr
+             | match_expr
+             | 'await' expression
+             | block ;
+
+struct_literal = '{' field_init { ',' field_init } '}' ;
+field_init     = IDENT ':' expression ;
+
+list_literal = '[' [ expression { ',' expression } ] ']' ;
+
+if_expr    = 'if' expression '{' expression '}' [ 'else' '{' expression '}' ] ;
+query_expr = 'from' expression [ 'where' expression ] ;
+             (* implicit variable `it` refers to each element *)
+spawn_expr = 'spawn' '{' { expression [ ';' ] } '}' ;
+match_expr = 'match' expression '{' { expression '=>' expression ',' } '}' ;
+```
+
+#### Operator Precedence (low to high)
+
+| Level | Operators | Associativity |
+|-------|-----------|---------------|
+| 1 | `\|\|` | Left |
 | 2 | `&&` | Left |
 | 3 | `==` `!=` | Left |
 | 4 | `<` `>` `<=` `>=` | Left |
 | 5 | `+` `-` | Left |
 | 6 | `*` `/` `%` | Left |
-| 7 (highest) | `!` `-` (unary) | Right |
+| 7 | `!` `-` (prefix) | Right |
+| 8 | `()` `.` `[]` `?` (postfix) | Left |
 
-### 5.2 String Interpolation
+---
 
+## 4. Type System
+
+### 4.1 Built-in Types
+
+| Apogee | Python | Size | Description |
+|--------|--------|------|-------------|
+| `Int` | `int` | Arbitrary | Arbitrary-precision integer |
+| `Float` | `float` | 64-bit | IEEE 754 double |
+| `String` | `str` | Variable | UTF-8 string, immutable |
+| `Bool` | `bool` | 1 byte | `true` or `false` |
+| `Void` | `None` | 0 | Absence of value |
+| `Any` | `object` | Variable | Escape hatch, bypasses checking |
+
+### 4.2 Nullable Types
+
+A type suffixed with `?` allows the value to be `null`.
+
+```apogee
+let a: String = "hello"   // OK
+let b: String = null       // COMPILE ERROR
+let c: String? = null      // OK
+let d: String? = "hello"   // OK — non-nullable assignable to nullable
 ```
-"Hello, \(name)!"   →   f"Hello, {name}!"
+
+**Rules:**
+
+1. `T` is assignable to `T?`, but `T?` is NOT assignable to `T`
+2. Member access on `T?` requires the `?` operator: `value?.member`
+3. `null` has type `T?` for any `T` — resolved by context
+
+### 4.3 Constraint Types
+
+A `where` clause attaches a compile-time or runtime predicate to a type.
+
+```apogee
+Int where value > 0           // positive integer
+String where len(value) > 0   // non-empty string
 ```
 
-### 5.3 Query Expressions
+When used in type declarations, the field name is the predicate variable:
 
+```apogee
+type User {
+  age: Int where age >= 0     // `age` is the variable in the predicate
+}
 ```
-from collection where condition
+
+**Checking rules:**
+
+1. **Literal values**: Checked at compile time. `User { age: -1 }` is a compile error.
+2. **Runtime values**: Checked at construction time via generated validation code.
+3. **Type compatibility**: `Int where value > 0` is assignable to `Int`, but not vice versa.
+
+### 4.4 Collection Types
+
+```apogee
+[T]              // List of T — ordered, indexed, mutable
 ```
 
-Compiles to list comprehension: `[it for it in collection if condition]`
+Future: `Map[K, V]`, `Set[T]`.
 
-The implicit variable `it` refers to each element.
+### 4.5 Function Types
 
-### 5.4 Spawn Blocks (Structured Concurrency)
-
+```apogee
+(Int, Int) -> Int       // function taking two Ints, returning Int
+(String) -> Void        // function taking a String, returning nothing
+() -> Bool              // nullary function returning Bool
 ```
+
+### 4.6 Type Inference
+
+Variable types are inferred from their initializer when no annotation is provided:
+
+```apogee
+let x = 42          // inferred: Int
+let s = "hello"     // inferred: String
+let xs = [1, 2, 3]  // inferred: [Int]
+```
+
+Function return types can be inferred from the body's final expression but explicit annotation is preferred.
+
+---
+
+## 5. Memory Model
+
+### 5.1 Current (Python Backend)
+
+All values are reference-counted and garbage-collected by the Python runtime. No manual memory management.
+
+### 5.2 Future (LLVM Backend)
+
+Planned ownership model:
+
+- **Owned values**: Default. Single owner, moved on assignment.
+- **Borrowed references**: Read-only access without ownership transfer.
+- **Unique references**: Mutable access with single-reference guarantee.
+
+The exact semantics are TBD and will be specified in a future revision.
+
+---
+
+## 6. Concurrency Model
+
+### 6.1 Spawn Blocks
+
+```apogee
 spawn {
-  fetch("url1")
-  fetch("url2")
+  task_a()
+  task_b()
+  task_c()
 }
 ```
 
-Compiles to: `asyncio.gather(fetch("url1"), fetch("url2"))`
+**Semantics:**
 
-### 5.5 If Expressions
+1. All expressions in the spawn block execute concurrently
+2. The spawn expression completes when ALL tasks complete
+3. If any task fails, all others are cancelled (structured concurrency)
+4. Returns the results as a tuple (future: typed)
 
-```
-if condition { value1 } else { value2 }
-```
+**Compilation:** Maps to `asyncio.gather()` in the Python backend.
 
-### 5.6 Match Expressions
+### 6.2 Async Functions
 
-```
-match x {
-  1 => "one",
-  2 => "two",
-  3 => "three"
+```apogee
+async fn fetch_data(url: String) -> String {
+  // ...
 }
 ```
 
-## 6. Annotations
+Async functions return a future that must be awaited:
 
-### 6.1 @intent
-
-```
-@intent("description of what this function does")
-fn name(...) -> Type { ... }
+```apogee
+let result = await fetch_data("https://example.com")
 ```
 
-Compiles to a docstring and serves as documentation for AI verification tools.
+---
 
-## 7. Modules
+## 7. Annotations
 
+### 7.1 @intent
+
+```apogee
+@intent("description of what this function should do")
+fn name(params) -> ReturnType {
+  body
+}
 ```
+
+**Semantics:**
+
+1. The string describes the intended behavior in natural language
+2. Compiled to a docstring in the current backend
+3. Future: AI verification tools will check implementation against intent
+4. Future: Formal verification via intent-to-specification translation
+
+**Rules:**
+
+- `@intent` must appear immediately before a function declaration
+- The argument must be a string literal (not an expression)
+- Multiple `@intent` annotations on the same function are an error
+
+---
+
+## 8. Modules
+
+### 8.1 Import
+
+```apogee
 import module_name
+import module_name.submodule
 ```
 
-## 8. Error Handling
+Imports make all public declarations from the module available in the current scope.
 
-The compiler produces errors with:
-- Line and column numbers
-- Descriptive messages
-- Fix suggestions where possible
+### 8.2 Standard Library Modules
 
-Categories:
-- **Lex errors**: Unterminated strings, unexpected characters
-- **Parse errors**: Missing braces, unexpected tokens
-- **Type errors**: Null safety violations, constraint violations, undefined variables
+| Module | Contents |
+|--------|----------|
+| `io` | `print`, `read`, `read_file`, `write_file` |
+| `collections` | `list_push`, `list_pop`, `map_get`, `map_set`, `set_add` |
+| `http` | `fetch`, `post`, `serve` |
+| `data` | `filter`, `map_list`, `sort`, `reduce`, `find` |
+
+---
+
+## 9. Error Model
+
+The compiler produces three categories of errors, each with line:column position and a fix suggestion:
+
+### 9.1 Lex Errors
+
+Triggered during tokenization.
+
+- Unterminated string literal
+- Unexpected character
+- Unterminated block comment
+- Unterminated backtick identifier
+
+### 9.2 Parse Errors
+
+Triggered during AST construction.
+
+- Missing delimiter (`{`, `}`, `(`, `)`)
+- Unexpected token
+- Malformed declaration
+
+### 9.3 Type Errors
+
+Triggered during type checking.
+
+- **Null safety**: Assigning `null` to a non-nullable type
+- **Constraint violation**: Literal value fails `where` predicate
+- **Undefined variable**: Reference to undeclared name
+- **Missing field**: Struct literal missing a required field
+- **Unknown field**: Struct literal contains a field not in the type
+- **Type mismatch**: Expression type incompatible with expected type
+- **Return type**: Function body type doesn't match declared return type
+
+---
+
+## 10. Compilation Targets
+
+| Target | Status | Command |
+|--------|--------|---------|
+| Python 3.11+ | Implemented | `apogee compile file.apg` |
+| LLVM IR | Planned (Phase 2) | — |
+| WebAssembly | Planned (Phase 3) | — |
+| JVM bytecode | Planned (Phase 4) | — |

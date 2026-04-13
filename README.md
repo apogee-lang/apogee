@@ -1,104 +1,114 @@
 # Apogee
 
-A programming language for the AI era — compile-time memory safety, null-safe types, structured concurrency, and `@intent` annotations for AI verification.
+[![CI](https://github.com/apogee-lang/apogee/actions/workflows/ci.yml/badge.svg)](https://github.com/apogee-lang/apogee/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-green.svg)](https://www.python.org/downloads/)
 
-Apogee compiles to Python 3.11+.
+**The programming language built for the AI era.**
+Compile-time safety. Intent verification. Runs everywhere.
 
-## Installation
+```apogee
+@intent("greet the user by name, never null")
+fn greet(name: String) -> String {
+  "Hello, \(name)! Welcome to Apogee."
+}
+
+type User {
+  name: String
+  age: Int where age >= 0
+}
+
+let user = User { name: "Tyler", age: 35 }
+print(greet(user.name))
+```
+
+```
+$ apogee run hello.apg
+Hello, Tyler! Welcome to Apogee.
+```
+
+---
+
+## Install
 
 ```bash
-# Clone and install
-git clone https://github.com/yourusername/apogee.git
+pip install apogee-lang
+```
+
+Or from source:
+
+```bash
+git clone https://github.com/apogee-lang/apogee.git
 cd apogee
 pip install -e .
-
-# Verify
 apogee --help
 ```
 
-## Quick Start
-
-Create `hello.apg`:
-
-```
-print("Hello, World!")
-```
-
-Run it:
-
-```bash
-apogee run hello.apg
-```
-
-Or compile to Python:
-
-```bash
-apogee compile hello.apg    # outputs hello.py
-```
-
-## 5 Reasons to Use Apogee Over Plain Python
-
-### 1. Null Safety at Compile Time
-
-```
-// Apogee catches null errors before runtime
-let name: String = get_name()    // must return String, not null
-let maybe: String? = find_user() // nullable — must handle with ?
-
-// Python equivalent: no protection — crashes at runtime
-```
-
-### 2. Constraint Types
-
-```
-type User {
-  name: String
-  age: Int where age >= 0    // compiler rejects: User { age: -1 }
-}
-
-// Python equivalent: you'd need manual validation everywhere
-```
-
-### 3. @intent Annotations for AI Verification
-
-```
-@intent("greet the user by name, never return null")
-fn greet(name: String) -> String {
-  "Hello, \(name)!"
-}
-
-// AI tools can verify the implementation matches the intent
-// Python equivalent: docstrings with no enforcement
-```
-
-### 4. Structured Concurrency
-
-```
-// Run tasks concurrently with a clear scope boundary
-spawn {
-  fetch("https://api.example.com/users")
-  fetch("https://api.example.com/posts")
-}
-
-// Python equivalent: asyncio.gather() boilerplate
-```
-
-### 5. Query Expressions
-
-```
-let adults = from users where it.age >= 18
-
-// Python equivalent: [u for u in users if u.age >= 18]
-// Apogee's version reads more naturally
-```
-
-## CLI Commands
+## CLI
 
 | Command | Description |
 |---|---|
-| `apogee compile <file.apg>` | Compile to Python (.py) |
-| `apogee run <file.apg>` | Compile and run immediately |
+| `apogee compile <file.apg>` | Transpile to Python (.py) |
+| `apogee run <file.apg>` | Compile and execute immediately |
 | `apogee check <file.apg>` | Type-check only, no output |
+
+## Why Apogee?
+
+### 1. Null safety at compile time
+
+```apogee
+let name: String = get_name()    // must return String, not null
+let maybe: String? = find_user() // nullable — callers must handle it
+print(maybe?.name)               // safe access with ?
+```
+
+### 2. Constraint types
+
+```apogee
+type User {
+  name: String
+  age: Int where age >= 0    // compiler rejects User { age: -1 }
+}
+```
+
+The compiler catches `User { age: -1 }` at build time. Runtime values are validated at construction.
+
+### 3. `@intent` annotations
+
+```apogee
+@intent("sort users by age descending, preserve original list")
+fn sorted_by_age(users: [User]) -> [User] { ... }
+```
+
+Machine-readable contracts that AI tools can verify against the implementation.
+
+### 4. Structured concurrency
+
+```apogee
+spawn {
+  fetch_users()
+  fetch_posts()
+}
+// Both complete before execution continues. No dangling tasks.
+```
+
+### 5. Query expressions
+
+```apogee
+let adults = from users where it.age >= 18
+```
+
+Read more: [Why Apogee?](docs/WHY_APOGEE.md) | [Comparison table vs Python, TypeScript, Rust, Go](docs/WHY_APOGEE.md#comparison)
+
+## Documentation
+
+| Document | Description |
+|---|---|
+| [Language Spec](spec/SPEC.md) | Full EBNF grammar, type system rules, semantics |
+| [Why Apogee?](docs/WHY_APOGEE.md) | Design rationale and language comparison |
+| [Contributing](CONTRIBUTING.md) | Build from source, add features, code style |
+| [Changelog](CHANGELOG.md) | Release history |
+| [Roadmap](ROADMAP.md) | Python → LLVM → WASM → JVM |
 
 ## Running Tests
 
@@ -106,9 +116,30 @@ let adults = from users where it.age >= 18
 python -m tests.test_runner
 ```
 
-## Language Specification
+20 test programs covering all language features: functions, types, constraints, string interpolation, query expressions, spawn blocks, `@intent`, and 5 compile-time error tests.
 
-See [spec/SPEC.md](spec/SPEC.md) for the full language grammar and semantics.
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). The short version:
+
+1. Fork and clone
+2. `pip install -e .`
+3. Make changes following the pipeline: **spec → lexer → parser → typechecker → emitter → tests**
+4. `python -m tests.test_runner` — all green
+5. Open a PR
+
+Issues labeled [`good first issue`](https://github.com/apogee-lang/apogee/labels/good%20first%20issue) are a great place to start.
+
+## Roadmap
+
+| Phase | Target | Timeline |
+|---|---|---|
+| 1 | Python transpiler | **Now** |
+| 2 | Native LLVM backend | Month 6 |
+| 3 | WebAssembly target | Month 12 |
+| 4 | JVM target | Month 18 |
+
+See [ROADMAP.md](ROADMAP.md) for details.
 
 ## License
 

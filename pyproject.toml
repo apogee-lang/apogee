@@ -5,21 +5,38 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "apogee-lang"
 version = "0.1.0"
-description = "Apogee — a programming language for the AI era"
+description = "The programming language built for the AI era. Compile-time safety. Intent verification. Runs everywhere."
 readme = "README.md"
 license = {text = "MIT"}
-requires-python = ">=3.11"
+requires-python = ">=3.9"
 authors = [
     {name = "Tyler Walker"}
 ]
-keywords = ["programming-language", "transpiler", "compiler", "ai"]
+keywords = ["programming-language", "transpiler", "compiler", "ai", "type-safety", "apogee"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Compilers",
+    "Topic :: Software Development :: Code Generators",
 ]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.4.0",
+    "mypy>=1.10",
+    "pyinstaller>=6.0",
+]
+
+[project.urls]
+Homepage = "https://apogee-lang.dev"
+Documentation = "https://github.com/apogee-lang/apogee/blob/main/spec/SPEC.md"
+Repository = "https://github.com/apogee-lang/apogee"
+Issues = "https://github.com/apogee-lang/apogee/issues"
+Changelog = "https://github.com/apogee-lang/apogee/blob/main/CHANGELOG.md"
 
 [project.scripts]
 apogee = "src.cli:main"

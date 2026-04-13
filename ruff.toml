@@ -1,0 +1,12 @@
+target-version = "py311"
+line-length = 100
+
+[lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM"]
+ignore = [
+  "E501",   # line too long — handled by formatter
+  "UP007",  # use X | Y for union types — needs 3.10+
+]
+
+[lint.isort]
+known-first-party = ["src"]
