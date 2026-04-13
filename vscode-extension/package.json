@@ -1,0 +1,167 @@
+{
+  "name": "apogee-language-support",
+  "displayName": "Apogee Language Support",
+  "description": "Full language support for Apogee — the programming language built for the AI era. Syntax highlighting, LSP, autocomplete, diagnostics, and more.",
+  "version": "0.1.0",
+  "publisher": "apogee-lang",
+  "license": "MIT",
+  "icon": "icons/apogee-icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apogee-lang/apogee"
+  },
+  "bugs": {
+    "url": "https://github.com/apogee-lang/apogee/issues"
+  },
+  "homepage": "https://apogee-lang.dev",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Snippets",
+    "Linters",
+    "Formatters"
+  ],
+  "keywords": [
+    "apogee",
+    "programming language",
+    "compiler",
+    "type safety",
+    "ai",
+    "intent",
+    "transpiler"
+  ],
+  "galleryBanner": {
+    "color": "#0a0e17",
+    "theme": "dark"
+  },
+  "activationEvents": [
+    "onLanguage:apogee"
+  ],
+  "main": "./client/out/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "apogee",
+        "aliases": ["Apogee", "apogee"],
+        "extensions": [".apg"],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./icons/apogee-icon.svg",
+          "dark": "./icons/apogee-icon.svg"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "apogee",
+        "scopeName": "source.apogee",
+        "path": "./syntaxes/apogee.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "apogee",
+        "path": "./snippets/apogee.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "apogee.runFile",
+        "title": "Apogee: Run File",
+        "icon": "$(play)"
+      },
+      {
+        "command": "apogee.checkFile",
+        "title": "Apogee: Check File",
+        "icon": "$(check)"
+      },
+      {
+        "command": "apogee.openPlayground",
+        "title": "Apogee: Open Playground",
+        "icon": "$(globe)"
+      },
+      {
+        "command": "apogee.showCompiledPython",
+        "title": "Apogee: Show Compiled Python",
+        "icon": "$(code)"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "when": "resourceLangId == apogee",
+          "command": "apogee.runFile",
+          "group": "navigation"
+        }
+      ],
+      "editor/context": [
+        {
+          "when": "resourceLangId == apogee",
+          "command": "apogee.runFile",
+          "group": "1_apogee"
+        },
+        {
+          "when": "resourceLangId == apogee",
+          "command": "apogee.checkFile",
+          "group": "1_apogee"
+        },
+        {
+          "when": "resourceLangId == apogee",
+          "command": "apogee.showCompiledPython",
+          "group": "1_apogee"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "apogee.runFile",
+        "key": "ctrl+shift+r",
+        "mac": "cmd+shift+r",
+        "when": "resourceLangId == apogee"
+      },
+      {
+        "command": "apogee.checkFile",
+        "key": "ctrl+shift+t",
+        "mac": "cmd+shift+t",
+        "when": "resourceLangId == apogee"
+      }
+    ],
+    "configuration": {
+      "title": "Apogee",
+      "properties": {
+        "apogee.compilerPath": {
+          "type": "string",
+          "default": "apogee",
+          "description": "Path to the apogee CLI binary"
+        },
+        "apogee.checkOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run type checking on save"
+        },
+        "apogee.formatOnSave": {
+          "type": "boolean",
+          "default": false,
+          "description": "Format document on save"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "cd client && npm run build",
+    "build:server": "cd server && npm run build",
+    "watch": "concurrently \"cd client && npm run watch\" \"cd server && npm run watch\"",
+    "install:all": "cd client && npm install && cd ../server && npm install",
+    "package": "vsce package",
+    "publish": "vsce publish"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "^2.24.0",
+    "concurrently": "^8.2.0",
+    "typescript": "^5.4.0"
+  }
+}

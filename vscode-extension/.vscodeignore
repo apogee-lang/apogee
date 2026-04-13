@@ -1,0 +1,13 @@
+.vscode/
+.github/
+client/src/
+server/src/
+client/tsconfig.json
+server/tsconfig.json
+client/node_modules/
+server/node_modules/
+**/*.ts
+**/*.map
+node_modules/
+.gitignore
+tsconfig.json

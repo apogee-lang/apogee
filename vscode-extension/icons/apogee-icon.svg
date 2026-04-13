@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <!-- Dark background circle -->
+  <circle cx="128" cy="128" r="128" fill="#0a0e17"/>
+  <!-- Stylized geometric "A" -->
+  <path d="M128 48 L72 208 L96 208 L108 172 L148 172 L160 208 L184 208 Z M118 148 L128 112 L138 148 Z" fill="#a8ff60" fill-rule="evenodd"/>
+</svg>
