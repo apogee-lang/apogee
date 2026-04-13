@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useEffect } from "react";
 import MonacoEditor, { OnMount, BeforeMount } from "@monaco-editor/react";
 import {
   APOGEE_LANG_ID,
@@ -8,7 +8,6 @@ import {
   monarchTokens,
 } from "@/lib/apogee-language";
 import { APOGEE_THEME_ID, apogeeTheme } from "@/lib/apogee-theme";
-import type { editor } from "monaco-editor";
 
 interface Props {
   value: string;
@@ -18,69 +17,73 @@ interface Props {
 }
 
 export default function Editor({ value, onChange, onRun, errors = [] }: Props) {
-  const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
-  const decorationsRef = useRef<editor.IEditorDecorationsCollection | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const editorRef = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const monacoRef = useRef<any>(null);
 
   const handleBeforeMount: BeforeMount = useCallback((monaco) => {
-    if (!monaco.languages.getLanguages().some((l: { id: string }) => l.id === APOGEE_LANG_ID)) {
+    if (
+      !monaco.languages
+        .getLanguages()
+        .some((l: { id: string }) => l.id === APOGEE_LANG_ID)
+    ) {
       monaco.languages.register({ id: APOGEE_LANG_ID, extensions: [".apg"] });
-      monaco.languages.setLanguageConfiguration(APOGEE_LANG_ID, languageConfig);
-      monaco.languages.setMonarchTokensProvider(APOGEE_LANG_ID, monarchTokens);
+      monaco.languages.setLanguageConfiguration(
+        APOGEE_LANG_ID,
+        languageConfig
+      );
+      monaco.languages.setMonarchTokensProvider(
+        APOGEE_LANG_ID,
+        monarchTokens
+      );
     }
     monaco.editor.defineTheme(APOGEE_THEME_ID, apogeeTheme);
   }, []);
 
-  const handleMount: OnMount = useCallback(
-    (editor, monaco) => {
-      editorRef.current = editor;
-      decorationsRef.current = editor.createDecorationsCollection([]);
+  const onRunRef = useRef(onRun);
+  onRunRef.current = onRun;
 
-      // Cmd+Enter / Ctrl+Enter to run
-      editor.addAction({
-        id: "apogee-run",
-        label: "Run Apogee Program",
-        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
-        run: () => onRun(),
-      });
+  const handleMount: OnMount = useCallback((editor, monaco) => {
+    editorRef.current = editor;
+    monacoRef.current = monaco;
 
-      editor.focus();
-    },
-    [onRun]
-  );
+    editor.addAction({
+      id: "apogee-run",
+      label: "Run Apogee Program",
+      keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
+      run: () => onRunRef.current(),
+    });
 
-  // Update error decorations when errors change
-  const monacoRef = useRef<typeof import("monaco-editor") | null>(null);
+    editor.focus();
+  }, []);
 
-  const handleEditorDidMount: OnMount = useCallback(
-    (editor, monaco) => {
-      monacoRef.current = monaco;
-      handleMount(editor, monaco);
-    },
-    [handleMount]
-  );
-
-  // Apply error markers
-  if (editorRef.current && monacoRef.current && errors.length > 0) {
+  // Apply error markers when errors change
+  useEffect(() => {
+    const editor = editorRef.current;
     const monaco = monacoRef.current;
-    const model = editorRef.current.getModel();
-    if (model) {
+    if (!editor || !monaco) return;
+
+    const model = editor.getModel();
+    if (!model) return;
+
+    if (errors.length > 0) {
       monaco.editor.setModelMarkers(
         model,
         "apogee",
-        errors.map((e) => ({
+        errors.map((e: { line: number; col: number; msg: string }) => ({
           severity: monaco.MarkerSeverity.Error,
           message: e.msg,
-          startLineNumber: e.line,
-          startColumn: e.col,
-          endLineNumber: e.line,
-          endColumn: e.col + 10,
+          startLineNumber: Math.max(1, e.line),
+          startColumn: Math.max(1, e.col),
+          endLineNumber: Math.max(1, e.line),
+          endColumn: Math.max(1, e.col) + 10,
         }))
       );
+    } else {
+      monaco.editor.setModelMarkers(model, "apogee", []);
     }
-  } else if (editorRef.current && monacoRef.current) {
-    const model = editorRef.current.getModel();
-    if (model) monacoRef.current.editor.setModelMarkers(model, "apogee", []);
-  }
+  }, [errors]);
 
   return (
     <MonacoEditor
@@ -90,7 +93,7 @@ export default function Editor({ value, onChange, onRun, errors = [] }: Props) {
       value={value}
       onChange={(v) => onChange(v ?? "")}
       beforeMount={handleBeforeMount}
-      onMount={handleEditorDidMount}
+      onMount={handleMount}
       loading={
         <div className="flex items-center justify-center h-full text-zinc-500">
           Loading editor...
@@ -98,7 +101,8 @@ export default function Editor({ value, onChange, onRun, errors = [] }: Props) {
       }
       options={{
         fontSize: 14,
-        fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace",
+        fontFamily:
+          "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace",
         fontLigatures: true,
         lineNumbers: "on",
         minimap: { enabled: false },

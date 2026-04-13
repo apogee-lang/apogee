@@ -928,7 +928,7 @@ function emitPython(program: Program): string {
         const prog = new Parser(toks).parse();
         if (prog.stmts.length && prog.stmts[0].kind === "ExprStmt") parts.push("{" + emitExpr(prog.stmts[0].expr) + "}");
         else parts.push("{" + exprText + "}");
-      } catch { parts.push("{" + exprText + "}"); }
+      } catch (_e) { parts.push("{" + exprText + "}"); }
       i = startPos + exprText.length + 3;
     }
     parts.push(raw.substring(i));

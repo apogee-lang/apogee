@@ -32,7 +32,7 @@ export default function PlaygroundPage() {
       try {
         const decoded = atob(encoded);
         setCode(decoded);
-      } catch {
+      } catch (_e) {
         // ignore invalid base64
       }
     }
